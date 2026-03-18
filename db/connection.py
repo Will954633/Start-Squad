@@ -2,8 +2,25 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from config import Config
 from logger import log
 
+
+def _get_async_url(url: str) -> str:
+    """Convert a DATABASE_URL to an async-compatible one.
+
+    Railway provides postgresql://... but we need postgresql+asyncpg://...
+    Local dev uses sqlite+aiosqlite:///...
+    """
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+asyncpg://", 1)
+    return url
+
+
+db_url = _get_async_url(Config.DATABASE_URL)
+log.info(f"Database URL scheme: {db_url.split('://')[0]}")
+
 engine = create_async_engine(
-    Config.DATABASE_URL,
+    db_url,
     echo=not Config.is_production(),
     pool_pre_ping=True,
 )

@@ -69,6 +69,14 @@ def create_main_app() -> Application:
         workout_message,
     ))
 
+    # General chat — any DM text that isn't a command or caught by conversation handlers
+    # Triggers persona reactions so the chat feels alive
+    from bot.handlers.chat import general_chat_message
+    app.add_handler(MessageHandler(
+        filters.TEXT & ~filters.COMMAND & filters.ChatType.PRIVATE,
+        general_chat_message,
+    ))
+
     log.info("Main bot application created with all handlers")
     return app
 
