@@ -32,7 +32,7 @@ PERSONAS = [
             '"let\'s gooo", "crushing it!!", "did my squats watching the sunrise at Burleigh 🌅"'
         ),
         "motivation_style": "cheerleader",
-        "profile_photo_path": "assets/profile_photos/tash.jpg",
+        "profile_photo_path": "assets/profile_photos/tash.png",
         "variance_factor": 0.15,
         "off_day_frequency": 7,  # 1 in 7 days
         "off_day_penalty": 0.30,  # 30% reduction on off days
@@ -66,7 +66,7 @@ PERSONAS = [
             '"mate", "champion", "beauty", "up before the sparrows"'
         ),
         "motivation_style": "competitive",
-        "profile_photo_path": "assets/profile_photos/damo.jpg",
+        "profile_photo_path": "assets/profile_photos/damo.png",
         "variance_factor": 0.20,
         "off_day_frequency": 5,
         "off_day_penalty": 0.25,
@@ -100,7 +100,7 @@ PERSONAS = [
             '"Rest days are gains days", "Form over numbers always"'
         ),
         "motivation_style": "coach",
-        "profile_photo_path": "assets/profile_photos/sam.jpg",
+        "profile_photo_path": "assets/profile_photos/sam.png",
         "variance_factor": 0.10,
         "off_day_frequency": 10,
         "off_day_penalty": 0.15,
@@ -134,7 +134,7 @@ PERSONAS = [
             '"ngl i almost didn\'t get up", "surf was pumping so that counts right"'
         ),
         "motivation_style": "joker",
-        "profile_photo_path": "assets/profile_photos/jake.jpg",
+        "profile_photo_path": "assets/profile_photos/jake.png",
         "variance_factor": 0.25,
         "off_day_frequency": 4,
         "off_day_penalty": 0.35,
@@ -168,7 +168,7 @@ PERSONAS = [
             '"Coffee counts as a pre-workout right?", "Robina mum life"'
         ),
         "motivation_style": "realist",
-        "profile_photo_path": "assets/profile_photos/mel.jpg",
+        "profile_photo_path": "assets/profile_photos/mel.png",
         "variance_factor": 0.20,
         "off_day_frequency": 5,
         "off_day_penalty": 0.30,

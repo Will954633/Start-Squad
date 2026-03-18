@@ -28,9 +28,7 @@ logs/
 *.db
 *.sqlite3
 
-# Assets (generated)
-assets/profile_photos/*.jpg
-assets/profile_photos/*.png
+# Assets — profile photos are tracked (not generated at runtime)
 
 # Railway
 .railway/

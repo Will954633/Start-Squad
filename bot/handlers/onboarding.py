@@ -485,23 +485,36 @@ async def confirm_and_create(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         await mark_onboarding_complete(session, user.id)
 
-    # Step 2: Introduce the team roster
-    # TODO: Send profile photos once we have them (bot.send_photo)
-    roster = (
-        f"Meet your {city} squad:\n\n"
-        "👩 Tash Murray — Graphic designer, Burleigh Heads\n"
-        "     Your biggest cheerleader. Morning workout warrior.\n\n"
-        "👷 Damo Reilly — Electrician, Nerang\n"
-        "     Competitive but fair. Up before the sparrows.\n\n"
-        "🧑‍⚕️ Sam Taufa — Physio student, Southport\n"
-        "     Your squad coach. Form tips and recovery advice.\n\n"
-        "🏄 Jake Henderson — Barista, Palm Beach\n"
-        "     The funny one. New to fitness like you.\n\n"
-        "👩‍👧 Mel Kovac — Accountant & mum, Robina\n"
-        "     Tells it like it is. Squeezes workouts into nap time."
-    )
-    await query.message.reply_text(roster)
-    await asyncio.sleep(1)
+    # Step 2: Introduce the team roster with photos
+    import os
+    photo_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "profile_photos")
+
+    await query.message.reply_text(f"Meet your {city} squad:")
+
+    team_members = [
+        ("tash", "Tash Murray", "Graphic designer, Burleigh Heads\nYour biggest cheerleader. Morning workout warrior."),
+        ("damo", "Damo Reilly", "Electrician, Nerang\nCompetitive but fair. Up before the sparrows."),
+        ("sam", "Sam Taufa", "Physio student, Southport\nYour squad coach. Form tips and recovery advice."),
+        ("jake", "Jake Henderson", "Barista, Palm Beach\nThe funny one. New to fitness — just like you."),
+        ("mel", "Mel Kovac", "Accountant & mum, Robina\nTells it like it is. Squeezes workouts into nap time."),
+    ]
+
+    for slug, name, desc in team_members:
+        photo_path = os.path.join(photo_dir, f"{slug}.png")
+        try:
+            if os.path.exists(photo_path):
+                with open(photo_path, "rb") as photo:
+                    await query.message.reply_photo(
+                        photo=photo,
+                        caption=f"*{name}*\n{desc}",
+                        parse_mode="Markdown",
+                    )
+            else:
+                await query.message.reply_text(f"*{name}*\n{desc}", parse_mode="Markdown")
+        except Exception as e:
+            log.warning(f"Failed to send photo for {slug}: {e}")
+            await query.message.reply_text(f"*{name}*\n{desc}", parse_mode="Markdown")
+        await asyncio.sleep(0.8)  # Small delay between cards
 
     # Step 3: How it works
     pushup_label = "from knees" if data.get("pushup_variant") == "knees" else "from toes"
