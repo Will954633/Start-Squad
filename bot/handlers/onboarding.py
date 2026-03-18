@@ -208,14 +208,14 @@ async def _send_persona_intros(chat_id: int, human_name: str, city: str):
     from llm.prompts import SYSTEM_PROMPT
 
     intros = {
-        "mia": f"YESSS new squad member!! Welcome {human_name}! I'm Mia, I do my workouts before my morning coffee here in {city}. So pumped to have you here! 🔥✨",
-        "damo": f"Welcome aboard mate. I'm Damo. Fair warning — I like a bit of friendly competition 💪",
-        "priya": f"Hey {human_name}! I'm Priya. If you ever need form tips or have any aches, I'm your person 💚",
-        "jake": f"yooo {human_name}! jake here. don't worry i'm also terrible at this. we suffer together 😂💀",
-        "lena": f"Welcome {human_name}. I'm Lena. I squeeze workouts in during nap time so if I go quiet, the toddler won. Glad you're here ☕💪",
+        "tash": f"YESSS new squad member!! Welcome {human_name}! I'm Tash, I do my squats on the balcony watching the sunrise at Burleigh. Literally so pumped to have you here! 🔥✨",
+        "damo": f"Welcome aboard mate. I'm Damo. Sparky from Nerang. Fair warning — I like a bit of friendly competition 💪",
+        "sam": f"Hey {human_name}! I'm Sam. Physio student at Griffith. If you ever need form tips or have any aches, I'm your guy uso 💚",
+        "jake": f"yooo {human_name}! jake here. barista at burleigh. don't worry i'm also terrible at this. we suffer together 😂💀",
+        "mel": f"Welcome {human_name}. I'm Mel. Robina mum life — I squeeze workouts in during nap time so if I go quiet, the toddler won. Glad you're here ☕💪",
     }
 
-    delays = {"mia": 5, "damo": 65, "priya": 130, "jake": 200, "lena": 260}
+    delays = {"tash": 5, "damo": 65, "sam": 130, "jake": 200, "mel": 260}
 
     for slug, delay in delays.items():
         await asyncio.sleep(delay)

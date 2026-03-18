@@ -9,35 +9,35 @@ Each bot gets its own name, username, and profile photo.
 2. Send `/newbot`
 3. Follow the prompts:
 
-### Bot 1: Mia Chen
-- **Name:** Mia Chen
-- **Username:** StartSquad_Mia_bot (or similar available name)
-- **Profile Photo:** Upload `assets/profile_photos/mia.jpg`
-- **Store token as:** `PERSONA_MIA_TOKEN` in `.env`
+### Bot 1: Tash Murray
+- **Name:** Tash Murray
+- **Username:** StartSquad_Tash_bot (or similar available name)
+- **Profile Photo:** Upload `assets/profile_photos/tash.jpg`
+- **Store token as:** `PERSONA_TASH_TOKEN` in `.env`
 
-### Bot 2: Damo Torres
-- **Name:** Damo Torres
+### Bot 2: Damo Reilly
+- **Name:** Damo Reilly
 - **Username:** StartSquad_Damo_bot
 - **Profile Photo:** Upload `assets/profile_photos/damo.jpg`
 - **Store token as:** `PERSONA_DAMO_TOKEN` in `.env`
 
-### Bot 3: Priya Sharma
-- **Name:** Priya Sharma
-- **Username:** StartSquad_Priya_bot
-- **Profile Photo:** Upload `assets/profile_photos/priya.jpg`
-- **Store token as:** `PERSONA_PRIYA_TOKEN` in `.env`
+### Bot 3: Sam Taufa
+- **Name:** Sam Taufa
+- **Username:** StartSquad_Sam_bot
+- **Profile Photo:** Upload `assets/profile_photos/sam.jpg`
+- **Store token as:** `PERSONA_SAM_TOKEN` in `.env`
 
-### Bot 4: Jake Nguyen
-- **Name:** Jake Nguyen
+### Bot 4: Jake Henderson
+- **Name:** Jake Henderson
 - **Username:** StartSquad_Jake_bot
 - **Profile Photo:** Upload `assets/profile_photos/jake.jpg`
 - **Store token as:** `PERSONA_JAKE_TOKEN` in `.env`
 
-### Bot 5: Lena Volkova
-- **Name:** Lena Volkova
-- **Username:** StartSquad_Lena_bot
-- **Profile Photo:** Upload `assets/profile_photos/lena.jpg`
-- **Store token as:** `PERSONA_LENA_TOKEN` in `.env`
+### Bot 5: Mel Kovac
+- **Name:** Mel Kovac
+- **Username:** StartSquad_Mel_bot
+- **Profile Photo:** Upload `assets/profile_photos/mel.jpg`
+- **Store token as:** `PERSONA_MEL_TOKEN` in `.env`
 
 ## Setting Profile Photos
 
@@ -66,11 +66,11 @@ For each persona bot:
 Update your `.env` file with all 6 tokens:
 ```
 TELEGRAM_BOT_TOKEN=<main StartSquad_bot token>
-PERSONA_MIA_TOKEN=<Mia's token>
+PERSONA_TASH_TOKEN=<Tash's token>
 PERSONA_DAMO_TOKEN=<Damo's token>
-PERSONA_PRIYA_TOKEN=<Priya's token>
+PERSONA_SAM_TOKEN=<Sam's token>
 PERSONA_JAKE_TOKEN=<Jake's token>
-PERSONA_LENA_TOKEN=<Lena's token>
+PERSONA_MEL_TOKEN=<Mel's token>
 ```
 
 Then update Railway environment variables with the same values.

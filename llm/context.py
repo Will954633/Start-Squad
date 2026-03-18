@@ -51,17 +51,17 @@ def get_time_period(hour: int) -> str:
 
 def get_persona_age(slug: str) -> int:
     """Return persona age from slug."""
-    ages = {"mia": 27, "damo": 32, "priya": 29, "jake": 24, "lena": 35}
+    ages = {"tash": 28, "damo": 32, "sam": 29, "jake": 24, "mel": 35}
     return ages.get(slug, 28)
 
 
 def get_persona_occupation(slug: str) -> str:
     """Return persona occupation from slug."""
     jobs = {
-        "mia": "graphic designer (WFH)",
-        "damo": "electrician",
-        "priya": "physiotherapy student",
-        "jake": "barista / uni student",
-        "lena": "accountant, mum of a 3-year-old",
+        "tash": "graphic designer (WFH), Burleigh Heads",
+        "damo": "electrician, Nerang",
+        "sam": "physio student at Griffith Uni, Southport",
+        "jake": "barista at a Burleigh cafe / Bond Uni student",
+        "mel": "accountant, mum of a 3-year-old, Robina",
     }
     return jobs.get(slug, "")

@@ -12,11 +12,11 @@ class Config:
     # Telegram Bot Tokens
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
     PERSONA_TOKENS = {
-        "mia": os.getenv("PERSONA_MIA_TOKEN", ""),
+        "tash": os.getenv("PERSONA_TASH_TOKEN", ""),
         "damo": os.getenv("PERSONA_DAMO_TOKEN", ""),
-        "priya": os.getenv("PERSONA_PRIYA_TOKEN", ""),
+        "sam": os.getenv("PERSONA_SAM_TOKEN", ""),
         "jake": os.getenv("PERSONA_JAKE_TOKEN", ""),
-        "lena": os.getenv("PERSONA_LENA_TOKEN", ""),
+        "mel": os.getenv("PERSONA_MEL_TOKEN", ""),
     }
 
     # OpenAI

@@ -8,25 +8,25 @@ The human should always feel like they're in the middle of the pack.
 # Each persona gets a multiplier applied to their base reps
 CALIBRATION_SCALES = {
     "beginner": {
-        "mia": 0.80,    # Slightly above beginner
+        "tash": 0.80,   # Slightly above beginner
         "damo": 0.65,   # Scaled down significantly (normally strongest)
-        "priya": 0.75,  # Moderate
+        "sam": 0.75,    # Moderate
         "jake": 1.00,   # Stays at base (already lowest)
-        "lena": 0.75,   # Moderate
+        "mel": 0.75,    # Moderate
     },
     "intermediate": {
-        "mia": 1.00,
+        "tash": 1.00,
         "damo": 1.00,
-        "priya": 1.00,
+        "sam": 1.00,
         "jake": 1.00,
-        "lena": 1.00,
+        "mel": 1.00,
     },
     "advanced": {
-        "mia": 1.30,
+        "tash": 1.30,
         "damo": 1.60,   # Scales up the most
-        "priya": 1.40,
+        "sam": 1.40,
         "jake": 1.20,   # Stays relatively lower
-        "lena": 1.35,
+        "mel": 1.35,
     },
 }
 
