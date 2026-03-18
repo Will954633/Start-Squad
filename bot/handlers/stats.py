@@ -1,4 +1,4 @@
-"""Stats and history command handlers."""
+"""Stats, today, and history command handlers."""
 
 import io
 from datetime import date, timedelta
@@ -8,7 +8,66 @@ from telegram.ext import ContextTypes
 from logger import log
 from db.connection import async_session
 from db.queries.users import get_user_by_telegram_id
-from db.queries.stats import get_weekly_stats, get_monthly_stats, get_current_streak
+from db.queries.stats import (
+    get_weekly_stats, get_monthly_stats, get_current_streak,
+    get_or_create_daily_stat,
+)
+
+
+async def today_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle /today — show today's progress and yesterday's recap."""
+    async with async_session() as session:
+        user = await get_user_by_telegram_id(session, update.effective_user.id)
+        if not user:
+            await update.message.reply_text("Use /start to set up first!")
+            return
+
+        today = date.today()
+        yesterday = today - timedelta(days=1)
+
+        today_stat = await get_or_create_daily_stat(session, user.id, today)
+        yesterday_stat = await get_or_create_daily_stat(session, user.id, yesterday)
+        streak = await get_current_streak(session, user.id)
+
+    # Exercise labels based on user preferences
+    pushup_label = "Push-ups (knees)" if user.pushup_variant == "knees" else "Push-ups"
+    situp_label = "Crunches" if user.situp_variant == "crunches" else "Sit-ups"
+
+    # Today section
+    if today_stat.completed:
+        today_text = (
+            f"TODAY ✅\n"
+            f"  🦵 Squats: {today_stat.total_squats}\n"
+            f"  💪 {pushup_label}: {today_stat.total_pushups}\n"
+            f"  🫡 {situp_label}: {today_stat.total_situps}\n"
+            f"  📝 {today_stat.workout_count} workout{'s' if today_stat.workout_count != 1 else ''} logged"
+        )
+    else:
+        today_text = (
+            "TODAY — No workout yet\n"
+            "  Your squad is waiting for you! 💪\n"
+            "  Log with /workout (e.g. /workout squats 30)"
+        )
+
+    # Yesterday section
+    if yesterday_stat.completed:
+        yesterday_text = (
+            f"YESTERDAY ✅\n"
+            f"  🦵 Squats: {yesterday_stat.total_squats}\n"
+            f"  💪 {pushup_label}: {yesterday_stat.total_pushups}\n"
+            f"  🫡 {situp_label}: {yesterday_stat.total_situps}"
+        )
+    else:
+        yesterday_text = "YESTERDAY — Rest day"
+
+    text = (
+        f"📍 {user.first_name}'s Status\n"
+        f"🔥 Streak: {streak} day{'s' if streak != 1 else ''}\n\n"
+        f"{today_text}\n\n"
+        f"{yesterday_text}"
+    )
+
+    await update.message.reply_text(text)
 
 
 async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
