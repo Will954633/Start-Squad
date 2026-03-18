@@ -442,9 +442,19 @@ async def confirm_and_create(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await query.edit_message_text("No worries! Let's start over. What's your name?")
         return NAME
 
-    await query.edit_message_text("Setting up your squad now... 🏋️")
-
     data = context.user_data
+    city = data["city"]
+
+    # Step 1: "Assigning you to a team..."
+    await query.edit_message_text(f"Finding you a {city} team... 🔍")
+    await asyncio.sleep(2)
+
+    await query.message.reply_text(
+        f"Great news — we've found a {city} squad with a spot for you! 🎉\n\n"
+        "Setting up your team now..."
+    )
+    await asyncio.sleep(1.5)
+
     tg_user = update.effective_user
 
     async with async_session() as session:
@@ -453,7 +463,7 @@ async def confirm_and_create(update: Update, context: ContextTypes.DEFAULT_TYPE)
             session,
             telegram_id=tg_user.id,
             first_name=data["name"],
-            city=data["city"],
+            city=city,
             fitness_level=data["fitness_level"],
             goals=data["goals"],
             telegram_username=tg_user.username,
@@ -475,31 +485,54 @@ async def confirm_and_create(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         await mark_onboarding_complete(session, user.id)
 
+    # Step 2: Introduce the team roster
+    # TODO: Send profile photos once we have them (bot.send_photo)
+    roster = (
+        f"Meet your {city} squad:\n\n"
+        "👩 Tash Murray — Graphic designer, Burleigh Heads\n"
+        "     Your biggest cheerleader. Morning workout warrior.\n\n"
+        "👷 Damo Reilly — Electrician, Nerang\n"
+        "     Competitive but fair. Up before the sparrows.\n\n"
+        "🧑‍⚕️ Sam Taufa — Physio student, Southport\n"
+        "     Your squad coach. Form tips and recovery advice.\n\n"
+        "🏄 Jake Henderson — Barista, Palm Beach\n"
+        "     The funny one. New to fitness like you.\n\n"
+        "👩‍👧 Mel Kovac — Accountant & mum, Robina\n"
+        "     Tells it like it is. Squeezes workouts into nap time."
+    )
+    await query.message.reply_text(roster)
+    await asyncio.sleep(1)
+
+    # Step 3: How it works
     pushup_label = "from knees" if data.get("pushup_variant") == "knees" else "from toes"
     situp_label = "crunches" if data.get("situp_variant") == "crunches" else "sit-ups"
 
     await query.message.reply_text(
-        f"You're all set, {data['name']}! 🎉\n\n"
-        f"Your squad is from {data['city']} and they're fired up to train with you.\n\n"
-        "Here's how it works:\n"
+        f"Here's how it works, {data['name']}:\n\n"
         f"• Every day, do squats, push-ups ({pushup_label}), and {situp_label}\n"
         "• Your team posts their workouts too — you're not alone\n"
-        "• Log yours with /workout (e.g., /workout squats 30)\n"
-        "• Check your progress with /stats\n"
-        "• You'll get a morning reminder each day\n\n"
-        "Your team will introduce themselves shortly. Welcome to Start Squad! 💪"
+        "• Log yours with /workout (e.g. /workout squats 30)\n"
+        "• Check your day with /today\n"
+        "• Chat with your coach with /coach\n\n"
+        "Your team members will start saying hi shortly.\n"
+        "Welcome to Start Squad! 💪"
     )
 
-    # Schedule staggered persona introductions
+    # Step 4: Schedule natural persona introductions
     asyncio.create_task(_send_persona_intros(
-        update.effective_chat.id, data["name"], data["city"]
+        update.effective_chat.id, data["name"], city
     ))
 
     return ConversationHandler.END
 
 
 async def _send_persona_intros(chat_id: int, human_name: str, city: str):
-    """Send staggered introduction messages from each persona."""
+    """
+    Send staggered introduction messages from each persona.
+    First one within 5 min, second ~15 min, rest spread naturally.
+    Randomised order each time so it feels different per user.
+    """
+    import random
     from bot.app import get_persona_bot
 
     intros = {
@@ -510,9 +543,27 @@ async def _send_persona_intros(chat_id: int, human_name: str, city: str):
         "mel": f"Welcome {human_name}. I'm Mel. Robina mum life — I squeeze workouts in during nap time so if I go quiet, the toddler won. Glad you're here ☕💪",
     }
 
-    delays = {"tash": 5, "damo": 65, "sam": 130, "jake": 200, "mel": 260}
+    # Randomise the order each time
+    slugs = list(intros.keys())
+    random.shuffle(slugs)
 
-    for slug, delay in delays.items():
+    # First person: 2-5 minutes
+    # Second person: 10-20 minutes
+    # Third person: 30-60 minutes
+    # Fourth person: 1-3 hours
+    # Fifth person: 2-6 hours
+    delay_ranges = [
+        (120, 300),       # 2-5 min
+        (600, 1200),      # 10-20 min
+        (1800, 3600),     # 30-60 min
+        (3600, 10800),    # 1-3 hours
+        (7200, 21600),    # 2-6 hours
+    ]
+
+    for i, slug in enumerate(slugs):
+        min_delay, max_delay = delay_ranges[i]
+        delay = random.randint(min_delay, max_delay)
+        log.info(f"[{slug}] Will introduce in {delay}s ({delay // 60} min)")
         await asyncio.sleep(delay)
         bot = get_persona_bot(slug)
         if bot:
