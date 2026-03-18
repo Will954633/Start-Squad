@@ -494,11 +494,11 @@ async def confirm_and_create(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await query.message.reply_text(f"Meet your {city} squad:")
 
     team_members = [
-        ("tash", "Tash Murray", "Graphic designer, Burleigh Heads\nYour biggest cheerleader. Morning workout warrior."),
-        ("damo", "Damo Reilly", "Electrician, Nerang\nCompetitive but fair. Up before the sparrows."),
-        ("sam", "Sam Taufa", "Physio student, Southport\nYour squad coach. Form tips and recovery advice."),
-        ("jake", "Jake Henderson", "Barista, Palm Beach\nThe funny one. New to fitness — just like you."),
-        ("mel", "Mel Kovac", "Accountant & mum, Robina\nTells it like it is. Squeezes workouts into nap time."),
+        ("tash", "Tash Murray", "28 · Burleigh Heads"),
+        ("damo", "Damo Reilly", "32 · Nerang"),
+        ("sam", "Sam Taufa", "29 · Southport"),
+        ("jake", "Jake Henderson", "24 · Palm Beach"),
+        ("mel", "Mel Kovac", "35 · Robina"),
     ]
 
     for slug, name, desc in team_members:
