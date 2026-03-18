@@ -124,6 +124,7 @@ async def receive_city_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.edit_message_text("No worries! Just type your city:")
         return CITY
     context.user_data["city"] = city
+    await query.edit_message_text(f"📍 {city} ✅")
     return await _ask_fitness_level(query.message, context)
 
 
@@ -150,7 +151,8 @@ async def receive_fitness_level(update: Update, context: ContextTypes.DEFAULT_TY
     await query.answer()
     level = query.data.replace("level_", "")
     context.user_data["fitness_level"] = level
-    await query.edit_message_text(
+    await query.edit_message_text(f"💪 {level.title()} ✅")
+    await query.message.reply_text(
         "What's your main fitness goal?\n"
         "(e.g., get stronger, lose weight, build a habit, feel better)"
     )
