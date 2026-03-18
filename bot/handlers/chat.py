@@ -10,15 +10,14 @@ import asyncio
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from telegram import Bot
 from logger import log
+from config import Config
 from db.connection import async_session
 from db.queries.users import get_user_by_telegram_id
 from db.queries.personas import get_all_personas
-from db.queries.posts import get_channel_history
-from bot.app import get_persona_bot
 from llm.client import generate_message
 from llm.prompts import SYSTEM_PROMPT
-from llm.context import build_chat_history
 
 
 CHAT_RESPONSE_PROMPT = """You are {persona_name}, a member of a fitness accountability \
@@ -82,8 +81,8 @@ async def _respond_to_chat(chat_id: int, user_telegram_id: int, message_text: st
         num_responders = random.choices([1, 2], weights=[0.6, 0.4], k=1)[0]
         responders = random.sample(personas, min(num_responders, len(personas)))
 
-        # Build recent chat context
-        persona_names = {p.id: p.display_name for p in personas}
+    # Send via main bot with persona name attribution
+    main_bot = Bot(token=Config.TELEGRAM_BOT_TOKEN)
 
     for i, persona in enumerate(responders):
         # First responder: 1-5 min, second: 3-10 min
@@ -110,12 +109,12 @@ async def _respond_to_chat(chat_id: int, user_telegram_id: int, message_text: st
         if not response:
             continue
 
-        bot = get_persona_bot(persona.slug)
-        if not bot:
-            continue
-
         try:
-            await bot.send_message(chat_id=chat_id, text=response)
+            await main_bot.send_message(
+                chat_id=chat_id,
+                text=f"*{persona.display_name}*\n{response}",
+                parse_mode="Markdown",
+            )
             log.info(f"[{persona.slug}] Responded to chat: {response[:60]}...")
         except Exception as e:
             log.error(f"[{persona.slug}] Failed to respond: {e}")

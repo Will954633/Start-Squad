@@ -26,7 +26,7 @@ async def generate_message(
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                max_tokens=max_tokens,
+                max_completion_tokens=max_tokens,
                 temperature=temperature,
             )
             text = response.choices[0].message.content.strip()

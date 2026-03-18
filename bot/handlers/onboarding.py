@@ -546,16 +546,39 @@ async def _send_persona_intros(chat_id: int, human_name: str, city: str):
     Send staggered introduction messages from each persona.
     First one within 5 min, second ~15 min, rest spread naturally.
     Randomised order each time so it feels different per user.
+
+    Sent via the main bot with persona's photo + name, since persona bots
+    can't DM users who haven't started a chat with them.
     """
+    import os
     import random
-    from bot.app import get_persona_bot
+    from telegram import Bot
+    from config import Config
+
+    main_bot = Bot(token=Config.TELEGRAM_BOT_TOKEN)
+    photo_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "profile_photos")
 
     intros = {
-        "tash": f"YESSS new squad member!! Welcome {human_name}! I'm Tash, I do my squats on the balcony watching the sunrise at Burleigh. Literally so pumped to have you here! 🔥✨",
-        "damo": f"Welcome aboard mate. I'm Damo. Sparky from Nerang. Fair warning — I like a bit of friendly competition 💪",
-        "sam": f"Hey {human_name}! I'm Sam. Physio student at Griffith. If you ever need form tips or have any aches, I'm your guy uso 💚",
-        "jake": f"yooo {human_name}! jake here. barista at burleigh. don't worry i'm also terrible at this. we suffer together 😂💀",
-        "mel": f"Welcome {human_name}. I'm Mel. Robina mum life — I squeeze workouts in during nap time so if I go quiet, the toddler won. Glad you're here ☕💪",
+        "tash": (
+            "Tash Murray",
+            f"YESSS new squad member!! Welcome {human_name}! I'm Tash, I do my squats on the balcony watching the sunrise at Burleigh. Literally so pumped to have you here! 🔥✨",
+        ),
+        "damo": (
+            "Damo Reilly",
+            f"Welcome aboard mate. I'm Damo. Sparky from Nerang. Fair warning — I like a bit of friendly competition 💪",
+        ),
+        "sam": (
+            "Sam Taufa",
+            f"Hey {human_name}! I'm Sam. Physio student at Griffith. If you ever need form tips or have any aches, I'm your guy uso 💚",
+        ),
+        "jake": (
+            "Jake Henderson",
+            f"yooo {human_name}! jake here. barista at burleigh. don't worry i'm also terrible at this. we suffer together 😂💀",
+        ),
+        "mel": (
+            "Mel Kovac",
+            f"Welcome {human_name}. I'm Mel. Robina mum life — I squeeze workouts in during nap time so if I go quiet, the toddler won. Glad you're here ☕💪",
+        ),
     }
 
     # Randomise the order each time
@@ -580,13 +603,28 @@ async def _send_persona_intros(chat_id: int, human_name: str, city: str):
         delay = random.randint(min_delay, max_delay)
         log.info(f"[{slug}] Will introduce in {delay}s ({delay // 60} min)")
         await asyncio.sleep(delay)
-        bot = get_persona_bot(slug)
-        if bot:
-            try:
-                await bot.send_message(chat_id=chat_id, text=intros[slug])
-                log.info(f"[{slug}] Sent intro to chat {chat_id}")
-            except Exception as e:
-                log.error(f"[{slug}] Failed to send intro: {e}")
+
+        name, message = intros[slug]
+        photo_path = os.path.join(photo_dir, f"{slug}.png")
+
+        try:
+            if os.path.exists(photo_path):
+                with open(photo_path, "rb") as photo:
+                    await main_bot.send_photo(
+                        chat_id=chat_id,
+                        photo=photo,
+                        caption=f"*{name}*\n\n{message}",
+                        parse_mode="Markdown",
+                    )
+            else:
+                await main_bot.send_message(
+                    chat_id=chat_id,
+                    text=f"*{name}*\n\n{message}",
+                    parse_mode="Markdown",
+                )
+            log.info(f"[{slug}] Sent intro to chat {chat_id}")
+        except Exception as e:
+            log.error(f"[{slug}] Failed to send intro: {e}")
 
 
 async def _seed_personas(session):
