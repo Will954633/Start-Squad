@@ -17,7 +17,9 @@ class User(Base):
     telegram_id = Column(BigInteger, unique=True, nullable=False)
     telegram_username = Column(String(64))
     first_name = Column(String(128), nullable=False)
+    gender = Column(String(20), default="")  # male, female, other
     city = Column(String(128), nullable=False)
+    suburb = Column(String(128), default="")
     fitness_level = Column(String(20), nullable=False)  # beginner, intermediate, advanced
     goals = Column(Text)
     pushup_variant = Column(String(20), default="toes")      # knees or toes

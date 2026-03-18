@@ -22,11 +22,11 @@ from personas.calibration import calculate_adjusted_baseline
 from personas.definitions import PERSONAS
 
 # Conversation states
-(NAME, CITY, FITNESS_LEVEL, GOALS,
+(NAME, GENDER, CITY, SUBURB, FITNESS_LEVEL, GOALS,
  EXERCISE_SQUATS, EXERCISE_SQUATS_HELP,
  EXERCISE_PUSHUPS, EXERCISE_PUSHUPS_HELP,
  EXERCISE_SITUPS, EXERCISE_SITUPS_HELP,
- CONFIRM) = range(11)
+ CONFIRM) = range(13)
 
 # Common Australian cities
 CITIES = [
@@ -100,8 +100,27 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def receive_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Store name, ask for city."""
+    """Store name, ask for gender."""
     context.user_data["name"] = update.message.text.strip()
+
+    await update.message.reply_text(
+        f"Nice to meet you, {context.user_data['name']}!",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("Male", callback_data="gender_male")],
+            [InlineKeyboardButton("Female", callback_data="gender_female")],
+            [InlineKeyboardButton("Prefer not to say", callback_data="gender_other")],
+        ]),
+    )
+    return GENDER
+
+
+async def receive_gender(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Store gender, ask for city."""
+    query = update.callback_query
+    await query.answer()
+    gender = query.data.replace("gender_", "")
+    context.user_data["gender"] = gender
+    await query.edit_message_text(f"✅")
 
     keyboard = [
         [InlineKeyboardButton(city, callback_data=f"city_{city}")]
@@ -109,8 +128,8 @@ async def receive_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     ]
     keyboard.append([InlineKeyboardButton("Other", callback_data="city_other")])
 
-    await update.message.reply_text(
-        f"Nice to meet you, {context.user_data['name']}! Where are you based?",
+    await query.message.reply_text(
+        "Where are you based?",
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
     return CITY
@@ -125,11 +144,19 @@ async def receive_city_button(update: Update, context: ContextTypes.DEFAULT_TYPE
         return CITY
     context.user_data["city"] = city
     await query.edit_message_text(f"📍 {city} ✅")
-    return await _ask_fitness_level(query.message, context)
+    await query.message.reply_text("What suburb are you in?")
+    return SUBURB
 
 
 async def receive_city_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["city"] = update.message.text.strip()
+    await update.message.reply_text("What suburb are you in?")
+    return SUBURB
+
+
+async def receive_suburb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Store suburb, ask for fitness level."""
+    context.user_data["suburb"] = update.message.text.strip()
     return await _ask_fitness_level(update.message, context)
 
 
@@ -417,9 +444,12 @@ async def _show_confirmation(message, context) -> int:
     pushup_label = "from knees" if data.get("pushup_variant") == "knees" else "from toes"
     situp_label = "Crunches" if data.get("situp_variant") == "crunches" else "Full sit-ups"
 
+    suburb = data.get("suburb", "")
+    location = f"{suburb}, {data['city']}" if suburb else data["city"]
+
     await message.reply_text(
         f"Here's your setup, {data['name']}:\n\n"
-        f"📍 {data['city']}\n"
+        f"📍 {location}\n"
         f"💪 {data['fitness_level'].title()}\n"
         f"🎯 {data['goals']}\n\n"
         f"Your daily exercises:\n"
@@ -469,6 +499,8 @@ async def confirm_and_create(update: Update, context: ContextTypes.DEFAULT_TYPE)
             fitness_level=data["fitness_level"],
             goals=data["goals"],
             telegram_username=tg_user.username,
+            gender=data.get("gender", ""),
+            suburb=data.get("suburb", ""),
             pushup_variant=data.get("pushup_variant", "toes"),
             situp_variant=data.get("situp_variant", "full_situps"),
         )
@@ -660,9 +692,15 @@ def get_onboarding_handler() -> ConversationHandler:
         entry_points=[CommandHandler("start", start)],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_name)],
+            GENDER: [
+                CallbackQueryHandler(receive_gender, pattern="^gender_"),
+            ],
             CITY: [
                 CallbackQueryHandler(receive_city_button, pattern="^city_"),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, receive_city_text),
+            ],
+            SUBURB: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, receive_suburb),
             ],
             FITNESS_LEVEL: [
                 CallbackQueryHandler(receive_fitness_level, pattern="^level_"),

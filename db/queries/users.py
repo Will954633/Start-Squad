@@ -19,6 +19,8 @@ async def create_user(
     goals: str = "",
     telegram_username: str | None = None,
     timezone: str = "Australia/Brisbane",
+    gender: str = "",
+    suburb: str = "",
     pushup_variant: str = "toes",
     situp_variant: str = "full_situps",
 ) -> User:
@@ -26,7 +28,9 @@ async def create_user(
         telegram_id=telegram_id,
         telegram_username=telegram_username,
         first_name=first_name,
+        gender=gender,
         city=city,
+        suburb=suburb,
         fitness_level=fitness_level,
         goals=goals,
         timezone=timezone,

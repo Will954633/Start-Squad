@@ -168,8 +168,13 @@ async def _respond_to_chat(chat_id: int, user_telegram_id: int, message_text: st
         ]
         log.info(f"General message — {num} personas will respond")
 
-    # Build recent chat context (simple for now)
-    recent_chat = f"{user.first_name}: {message_text}"
+    # Build recent chat context
+    gender_note = ""
+    if user.gender == "male":
+        gender_note = f" ({user.first_name} is male)"
+    elif user.gender == "female":
+        gender_note = f" ({user.first_name} is female)"
+    recent_chat = f"{user.first_name}{gender_note}: {message_text}"
 
     for persona, (min_delay, max_delay) in responders:
         delay = random.randint(min_delay, max_delay)
