@@ -19,6 +19,8 @@ async def create_user(
     goals: str = "",
     telegram_username: str | None = None,
     timezone: str = "Australia/Brisbane",
+    pushup_variant: str = "toes",
+    situp_variant: str = "full_situps",
 ) -> User:
     user = User(
         telegram_id=telegram_id,
@@ -28,6 +30,8 @@ async def create_user(
         fitness_level=fitness_level,
         goals=goals,
         timezone=timezone,
+        pushup_variant=pushup_variant,
+        situp_variant=situp_variant,
     )
     session.add(user)
     await session.commit()

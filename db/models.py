@@ -20,6 +20,8 @@ class User(Base):
     city = Column(String(128), nullable=False)
     fitness_level = Column(String(20), nullable=False)  # beginner, intermediate, advanced
     goals = Column(Text)
+    pushup_variant = Column(String(20), default="toes")      # knees or toes
+    situp_variant = Column(String(20), default="full_situps")  # crunches or full_situps
     timezone = Column(String(64), default="Australia/Brisbane")
     onboarding_complete = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
