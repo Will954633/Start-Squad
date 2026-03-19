@@ -21,6 +21,7 @@ from config import Config
 from db.connection import async_session
 from db.queries.users import get_user_by_telegram_id
 from db.queries.personas import get_all_personas
+from personas.definitions import get_team_slugs
 from llm.client import generate_message
 from llm.prompts import SYSTEM_PROMPT
 
@@ -116,7 +117,13 @@ async def _respond_to_chat(chat_id: int, user_telegram_id: int, message_text: st
         if not user:
             return
 
-        personas = await get_all_personas(session)
+        all_personas = await get_all_personas(session)
+        if not all_personas:
+            return
+
+        # Only use personas from the user's team
+        team_slugs = get_team_slugs(user.gender or "")
+        personas = [p for p in all_personas if p.slug in team_slugs]
         if not personas:
             return
 

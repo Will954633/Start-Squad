@@ -11,11 +11,18 @@ class Config:
 
     # Telegram Bot Tokens
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    # Male team tokens
     PERSONA_TOKENS = {
-        "tash": os.getenv("PERSONA_TASH_TOKEN", ""),
         "damo": os.getenv("PERSONA_DAMO_TOKEN", ""),
         "sam": os.getenv("PERSONA_SAM_TOKEN", ""),
         "jake": os.getenv("PERSONA_JAKE_TOKEN", ""),
+        "ryan": os.getenv("PERSONA_RYAN_TOKEN", ""),
+        "tom": os.getenv("PERSONA_TOM_TOKEN", ""),
+        # Female team tokens
+        "tash": os.getenv("PERSONA_TASH_TOKEN", ""),
+        "bree": os.getenv("PERSONA_BREE_TOKEN", ""),
+        "priya": os.getenv("PERSONA_PRIYA_TOKEN", ""),
+        "jess": os.getenv("PERSONA_JESS_TOKEN", ""),
         "mel": os.getenv("PERSONA_MEL_TOKEN", ""),
     }
 

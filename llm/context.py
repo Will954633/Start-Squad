@@ -49,19 +49,31 @@ def get_time_period(hour: int) -> str:
         return "night"
 
 
+# All persona metadata
+_PERSONA_DATA = {
+    # Male team
+    "damo": {"age": 32, "suburb": "Nerang", "job": "electrician"},
+    "sam":  {"age": 29, "suburb": "Southport", "job": "physio student at Griffith Uni"},
+    "jake": {"age": 24, "suburb": "Palm Beach", "job": "barista / Bond Uni student"},
+    "ryan": {"age": 30, "suburb": "Mermaid Beach", "job": "marketing manager (WFH)"},
+    "tom":  {"age": 36, "suburb": "Mudgeeraba", "job": "project manager, dad of two"},
+    # Female team
+    "tash":  {"age": 28, "suburb": "Burleigh Heads", "job": "graphic designer (WFH)"},
+    "bree":  {"age": 31, "suburb": "Broadbeach", "job": "real estate agent"},
+    "priya": {"age": 27, "suburb": "Southport", "job": "physio student at Griffith Uni"},
+    "jess":  {"age": 23, "suburb": "Labrador", "job": "barista / beauty therapy student"},
+    "mel":   {"age": 35, "suburb": "Robina", "job": "accountant, mum of a 3-year-old"},
+}
+
+
 def get_persona_age(slug: str) -> int:
-    """Return persona age from slug."""
-    ages = {"tash": 28, "damo": 32, "sam": 29, "jake": 24, "mel": 35}
-    return ages.get(slug, 28)
+    return _PERSONA_DATA.get(slug, {}).get("age", 28)
+
+
+def get_persona_suburb(slug: str) -> str:
+    return _PERSONA_DATA.get(slug, {}).get("suburb", "Gold Coast")
 
 
 def get_persona_occupation(slug: str) -> str:
-    """Return persona occupation from slug."""
-    jobs = {
-        "tash": "graphic designer (WFH), Burleigh Heads",
-        "damo": "electrician, Nerang",
-        "sam": "physio student at Griffith Uni, Southport",
-        "jake": "barista at a Burleigh cafe / Bond Uni student",
-        "mel": "accountant, mum of a 3-year-old, Robina",
-    }
-    return jobs.get(slug, "")
+    data = _PERSONA_DATA.get(slug, {})
+    return f"{data.get('job', '')}, {data.get('suburb', '')}"

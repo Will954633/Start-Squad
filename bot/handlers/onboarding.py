@@ -19,7 +19,7 @@ from db.queries.users import get_user_by_telegram_id, create_user, mark_onboardi
 from db.queries.personas import get_all_personas, set_calibration
 from db.models import TeamGroup
 from personas.calibration import calculate_adjusted_baseline
-from personas.definitions import PERSONAS
+from personas.definitions import ALL_PERSONAS, get_team_personas, get_team_slugs
 
 # Conversation states
 (NAME, GENDER, CITY, SUBURB, FITNESS_LEVEL, GOALS,
@@ -505,13 +505,18 @@ async def confirm_and_create(update: Update, context: ContextTypes.DEFAULT_TYPE)
             situp_variant=data.get("situp_variant", "full_situps"),
         )
 
-        # Calibrate personas to user's fitness level
-        personas = await get_all_personas(session)
-        if not personas:
+        # Seed all personas if not yet in DB
+        all_personas = await get_all_personas(session)
+        if not all_personas:
             await _seed_personas(session)
-            personas = await get_all_personas(session)
+            all_personas = await get_all_personas(session)
 
-        for persona in personas:
+        # Get the user's assigned team based on gender
+        team_slugs = get_team_slugs(data.get("gender", ""))
+        team_personas = [p for p in all_personas if p.slug in team_slugs]
+
+        # Calibrate only the user's team
+        for persona in team_personas:
             adjusted = calculate_adjusted_baseline(
                 persona.slug, persona.fitness_baseline, data["fitness_level"]
             )
@@ -525,12 +530,12 @@ async def confirm_and_create(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     await query.message.reply_text(f"Meet your {city} squad:")
 
+    # Build roster from the user's assigned team
+    from llm.context import get_persona_age, get_persona_suburb
+    team_defs = get_team_personas(data.get("gender", ""))
     team_members = [
-        ("tash", "Tash Murray", "28 · Burleigh Heads"),
-        ("damo", "Damo Reilly", "32 · Nerang"),
-        ("sam", "Sam Taufa", "29 · Southport"),
-        ("jake", "Jake Henderson", "24 · Palm Beach"),
-        ("mel", "Mel Kovac", "35 · Robina"),
+        (p["slug"], p["display_name"], f"{get_persona_age(p['slug'])} · {get_persona_suburb(p['slug'])}")
+        for p in team_defs
     ]
 
     for slug, name, desc in team_members:
@@ -567,20 +572,16 @@ async def confirm_and_create(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     # Step 4: Schedule natural persona introductions
     asyncio.create_task(_send_persona_intros(
-        update.effective_chat.id, data["name"], city
+        update.effective_chat.id, data["name"], city, data.get("gender", "")
     ))
 
     return ConversationHandler.END
 
 
-async def _send_persona_intros(chat_id: int, human_name: str, city: str):
+async def _send_persona_intros(chat_id: int, human_name: str, city: str, gender: str):
     """
-    Send staggered introduction messages from each persona.
-    First one within 5 min, second ~15 min, rest spread naturally.
-    Randomised order each time so it feels different per user.
-
-    Sent via the main bot with persona's photo + name, since persona bots
-    can't DM users who haven't started a chat with them.
+    Send staggered introduction messages from each persona on the user's team.
+    First one within 5 min, rest spread naturally through the day.
     """
     import os
     import random
@@ -590,31 +591,25 @@ async def _send_persona_intros(chat_id: int, human_name: str, city: str):
     main_bot = Bot(token=Config.TELEGRAM_BOT_TOKEN)
     photo_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "profile_photos")
 
-    intros = {
-        "tash": (
-            "Tash Murray",
-            f"YESSS new squad member!! Welcome {human_name}! I'm Tash, I do my squats on the balcony watching the sunrise at Burleigh. Literally so pumped to have you here! 🔥✨",
-        ),
-        "damo": (
-            "Damo Reilly",
-            f"Welcome aboard mate. I'm Damo. Sparky from Nerang. Fair warning — I like a bit of friendly competition 💪",
-        ),
-        "sam": (
-            "Sam Taufa",
-            f"Hey {human_name}! I'm Sam. Physio student at Griffith. If you ever need form tips or have any aches, I'm your guy uso 💚",
-        ),
-        "jake": (
-            "Jake Henderson",
-            f"yooo {human_name}! jake here. barista at burleigh. don't worry i'm also terrible at this. we suffer together 😂💀",
-        ),
-        "mel": (
-            "Mel Kovac",
-            f"Welcome {human_name}. I'm Mel. Robina mum life — I squeeze workouts in during nap time so if I go quiet, the toddler won. Glad you're here ☕💪",
-        ),
+    # All possible intro messages (keyed by slug)
+    all_intros = {
+        # Male team
+        "damo": ("Damo Reilly", f"Welcome aboard mate. I'm Damo. Sparky from Nerang. Fair warning — I like a bit of friendly competition 💪"),
+        "sam": ("Sam Taufa", f"Hey {human_name}! I'm Sam. Physio student at Griffith. If you ever need form tips or have any aches, I'm your guy uso 💚"),
+        "jake": ("Jake Henderson", f"yooo {human_name}! jake here. barista at burleigh. don't worry i'm also terrible at this. we suffer together 😂💀"),
+        "ryan": ("Ryan Cross", f"Hey {human_name}! Ryan here, Mermaid Beach. Stoked to have you on the team. Let's get after it! 🔥💪"),
+        "tom": ("Tom Barker", f"Welcome {human_name}. I'm Tom. Dad of two from Mudgeeraba. I squeeze workouts in before the kids wake up — if I can do it, you can do it ☕💪"),
+        # Female team
+        "tash": ("Tash Murray", f"YESSS new squad member!! Welcome {human_name}! I'm Tash, I do my squats on the balcony watching the sunrise at Burleigh. Literally so pumped to have you here! 🔥✨"),
+        "bree": ("Bree Collins", f"Hey {human_name}! Bree here, Broadbeach. Fair warning — I like a bit of friendly competition. Who's beating my numbers today? 💪🏆"),
+        "priya": ("Priya Nair", f"Hey {human_name}! I'm Priya. Physio student at Griffith. If you ever need form tips or have any aches, I'm here for you 💚"),
+        "jess": ("Jess Tagaloa", f"yooo {human_name}! jess here from labrador. my sister made me join but honestly it's been the best. we're in this together 😂💀"),
+        "mel": ("Mel Kovac", f"Welcome {human_name}. I'm Mel. Robina mum life — I squeeze workouts in during nap time so if I go quiet, the toddler won. Glad you're here ☕💪"),
     }
 
-    # Randomise the order each time
-    slugs = list(intros.keys())
+    # Get only the slugs for this user's team
+    team_slugs = get_team_slugs(gender)
+    slugs = list(team_slugs)
     random.shuffle(slugs)
 
     # First person: 2-5 minutes
@@ -636,7 +631,9 @@ async def _send_persona_intros(chat_id: int, human_name: str, city: str):
         log.info(f"[{slug}] Will introduce in {delay}s ({delay // 60} min)")
         await asyncio.sleep(delay)
 
-        name, message = intros[slug]
+        if slug not in all_intros:
+            continue
+        name, message = all_intros[slug]
         photo_path = os.path.join(photo_dir, f"{slug}.png")
 
         try:
@@ -660,9 +657,9 @@ async def _send_persona_intros(chat_id: int, human_name: str, city: str):
 
 
 async def _seed_personas(session):
-    """Seed persona records into database."""
+    """Seed all persona records (both teams) into database."""
     from db.models import Persona
-    for p_data in PERSONAS:
+    for p_data in ALL_PERSONAS:
         persona = Persona(
             slug=p_data["slug"],
             display_name=p_data["display_name"],
